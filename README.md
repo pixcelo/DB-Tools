@@ -1,0 +1,2 @@
+# ssr-web
+Next.js
