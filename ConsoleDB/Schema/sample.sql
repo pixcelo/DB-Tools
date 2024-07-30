@@ -1,0 +1,43 @@
+-- 顧客テーブル
+CREATE TABLE Customers (
+    CustomerId BIGINT NOT NULL,
+    CustomerName NVARCHAR(100),
+    Email NVARCHAR(255),
+    RegisterdDate DATETIME NOT NULL
+);
+GO
+
+-- 注文テーブル
+CREATE TABLE Orders (
+    OrderId BIGINT IDENTITY(1,1) NOT NULL,
+    CustomerId BIGINT NOT NULL,
+    OrderDate DATETIME NOT NULL,
+    Quantity BIGINT NOT NULL
+);
+GO
+
+
+-- 注文テーブルのテストデータ挿入
+DECLARE @Numbers TABLE (Number INT)
+DECLARE @MaxCustomerId INT = (SELECT MAX(CustomerId) FROM Customers)
+DECLARE @StartDate DATE = '2023-01-01'
+DECLARE @EndDate DATE = '2024-01-01'
+
+-- 1から1000の数値を生成
+;WITH E1(N) AS (
+    SELECT 1 UNION ALL SELECT 1 UNION ALL SELECT 1 UNION ALL 
+    SELECT 1 UNION ALL SELECT 1 UNION ALL SELECT 1 UNION ALL 
+    SELECT 1 UNION ALL SELECT 1 UNION ALL SELECT 1 UNION ALL SELECT 1
+),
+E2(N) AS (SELECT 1 FROM E1 a, E1 b, E1 c),
+E4(N) AS (SELECT 1 FROM E2 a, E2 b, E2 c)
+INSERT INTO @Numbers SELECT TOP 1000 ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) FROM E4
+
+-- 大量のデータを生成して挿入
+INSERT INTO Orders (CustomerId, OrderDate, Quantity)
+SELECT 
+    ABS(CHECKSUM(NEWID()) % @MaxCustomerId) + 1,
+    DATEADD(DAY, ABS(CHECKSUM(NEWID()) % DATEDIFF(DAY, @StartDate, @EndDate)), @StartDate),
+    ABS(CHECKSUM(NEWID()) % 100) + 1
+FROM @Numbers a
+CROSS JOIN @Numbers b
