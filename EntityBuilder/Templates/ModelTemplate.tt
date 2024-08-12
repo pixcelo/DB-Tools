@@ -1,0 +1,120 @@
+<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ output encoding="UTF-8" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Xml.Linq" #>
+<#@ assembly name="System.Data" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Xml.Linq" #>
+<#@ import namespace="System.Data" #>
+<#@ import namespace="System.Data.SqlClient" #>
+<#@ output extension=".cs" #>
+<#
+
+// カラム情報を取得する
+static List<Tuple<string, string>> GetTableColumns(string tableName)
+{
+    string connectionString = "";
+    var columns = new List<Tuple<string, string>>();
+
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        return new List<Tuple<string, string>>();
+    }
+
+    using (var connection = new SqlConnection(connectionString))
+    {
+        connection.Open();
+        string query = @$"
+            SELECT 
+                COLUMN_NAME,
+                DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE
+                TABLE_NAME = '{tableName}'";
+
+        using (var command = new SqlCommand(query, connection))
+        using (var reader = command.ExecuteReader())
+        {
+            while (reader.Read())
+            {
+                string columnName = reader["COLUMN_NAME"].ToString();
+
+                // BaseTableModelにあるカラムはスキップ
+                if (columnName == "Id"
+                 || columnName == "IsDeleted"
+                 || columnName == "CreatedOn"
+                 || columnName == "CreatedUserId"
+                 || columnName == "UpdatedOn"
+                 || columnName == "UpdatedUserId"
+                    )
+                {
+                    continue;
+                }
+
+                string dataType = reader["DATA_TYPE"].ToString();
+                columns.Add(new Tuple<string, string>(columnName, MapDataType(dataType)));
+            }
+        }
+
+    }
+    return columns;
+}
+
+// DBのデータ型とC#のデータ型のマッピング
+static string MapDataType(string sqlDataType)
+{
+    var DataTypeMap = new Dictionary<string, string>
+    {
+        { "int", "int" },
+        { "bigint", "long" },
+        { "decimal", "decimal" },
+        { "nvarchar", "string" },
+        { "varchar", "string" },
+        { "char", "string" },
+        { "bid", "bool" },
+        { "datetime", "DateTime" },
+    };
+
+    const string defaultDataType = "string";
+
+    if (DataTypeMap.TryGetValue(sqlDataType, out var csharpDataType))
+    {
+        return csharpDataType;
+    }
+    return defaultDataType;
+}
+
+// ここでテーブル名を指定
+var tableName = "";
+
+// カラム情報を取得（BaseTableModelにあるカラムは除く）
+var columns = GetTableColumns(tableName);
+
+// 名前空間を決定
+var nameSpace = "PMS.Lib.Models.Database.Master";
+if (tableName.StartsWith("T_"))
+{
+	nameSpace = "PMS.Lib.Models.Database.Transaction";
+}
+
+// ここから下は出力されるコード
+#>
+namespace <#= nameSpace #>
+{
+    /// <summary>
+    /// 
+    /// </summary>
+    public class <#= tableName #> : BaseTableModel
+	{
+    <# foreach (var column in columns) { #>    
+        /// <summary>
+        /// 
+        /// </summary>
+        [PropertyMapping(true, "")]    
+        public <#= column.Item2 #> <#= column.Item1 #> { get; set; }
+    <# } #>
+
+    }
+}

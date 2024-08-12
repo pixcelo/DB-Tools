@@ -1,2 +1,1 @@
-# ssr-web
-Next.js
+# Database Accessor
