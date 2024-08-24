@@ -33,6 +33,7 @@
             this.attributeCheckBox = new CheckBox();
             this.commentCheckBox = new CheckBox();
             this.tableDataGridView = new DataGridView();
+            this.showDefinitionButton = new Button();
             ((System.ComponentModel.ISupportInitialize)this.tableDataGridView).BeginInit();
             this.SuspendLayout();
             // 
@@ -42,7 +43,7 @@
             this.generateButton.Name = "generateButton";
             this.generateButton.Size = new Size(75, 23);
             this.generateButton.TabIndex = 0;
-            this.generateButton.Text = "generate";
+            this.generateButton.Text = "作成";
             this.generateButton.UseVisualStyleBackColor = true;
             this.generateButton.Click += this.generateButton_Click;
             // 
@@ -88,18 +89,29 @@
             this.tableDataGridView.Size = new Size(479, 606);
             this.tableDataGridView.TabIndex = 6;
             // 
+            // showDefinitionButton
+            // 
+            this.showDefinitionButton.Location = new Point(351, 94);
+            this.showDefinitionButton.Name = "showDefinitionButton";
+            this.showDefinitionButton.Size = new Size(75, 23);
+            this.showDefinitionButton.TabIndex = 7;
+            this.showDefinitionButton.Text = "定義を表示";
+            this.showDefinitionButton.UseVisualStyleBackColor = true;
+            this.showDefinitionButton.Click += this.showDefinitionButton_Click;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new SizeF(7F, 15F);
             this.AutoScaleMode = AutoScaleMode.Font;
             this.ClientSize = new Size(479, 760);
+            this.Controls.Add(this.showDefinitionButton);
             this.Controls.Add(this.tableDataGridView);
             this.Controls.Add(this.commentCheckBox);
             this.Controls.Add(this.attributeCheckBox);
             this.Controls.Add(this.tableNameComboBox);
             this.Controls.Add(this.generateButton);
             this.Name = "MainForm";
-            this.Text = "Form1";
+            this.Text = "Main";
             ((System.ComponentModel.ISupportInitialize)this.tableDataGridView).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -112,5 +124,6 @@
         private CheckBox attributeCheckBox;
         private CheckBox commentCheckBox;
         private DataGridView tableDataGridView;
+        private Button showDefinitionButton;
     }
 }

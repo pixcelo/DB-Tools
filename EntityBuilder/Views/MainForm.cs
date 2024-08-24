@@ -1,5 +1,6 @@
 using EntityBuilder.Exceptions;
 using EntityBuilder.Models;
+using EntityBuilder.Views;
 using System.Data.SqlClient;
 
 namespace EntityBuilder
@@ -37,17 +38,17 @@ namespace EntityBuilder
         private void generateButton_Click(object sender, EventArgs e)
         {
             try
-            {                
+            {
                 var className = this.tableNameComboBox.Text;
 
                 if (string.IsNullOrEmpty(className))
-                {                    
+                {
                     throw new FileGenerationNotReadyException("テーブル、ビューを選択してください。");
                 }
-                
+
                 // テンプレートファイル読み込み　※選択できるようにすると選ぶのが面倒なので固定
                 this.templateString = File.ReadAllText("..\\..\\..\\Templates\\databaseModelClass.txt");
-                
+
                 this.GenerateClassTemplate(
                     className,
                     hasAttribute: this.attributeCheckBox.Checked,
@@ -90,7 +91,8 @@ namespace EntityBuilder
             if (className.StartsWith("V_"))
             {
                 namespaceString = "PMS.Lib.Models.Database.Views";
-                usingString = "using PMS.Lib.Models.Database.Master;";
+                // V_ は T_を継承する場合もあるが一旦、M_を継承するものとして固定
+                usingString = "\nusing PMS.Lib.Models.Database.Master;";
                 inheritance = $": {className.Replace("V_", "M_")}";
             }
             if (className.StartsWith("M_"))
@@ -111,7 +113,7 @@ namespace EntityBuilder
             });
             contents = contents.Replace("{properties}", string.Join("\n\n", properties));
 
- 
+
             var filePath = Path.Combine(Directory.GetCurrentDirectory(), $"{className}.cs");
             File.WriteAllText(filePath, contents);
 
@@ -193,7 +195,7 @@ namespace EntityBuilder
 
         /// <summary>
         /// テーブルのカラム一覧を取得する
-        /// TODO: V_ は M_やT_モデルクラスを継承するため、継承元のカラムは除外する必要あり
+        /// V_ は構成が分からないのでプロパティの調整が必要       
         /// </summary>
         /// <param name="tableName"></param>
         /// <returns></returns>
@@ -326,7 +328,7 @@ namespace EntityBuilder
                         string dataType = reader["DATA_TYPE"].ToString();
                         bool isNullable = reader["IS_NULLABLE"].ToString() == "YES";
                         int? maxLength = reader["CHARACTER_MAXIMUM_LENGTH"] as int?;
-                        
+
                         columns.Add(new ColumnInfo
                         {
                             ColumnName = columnName,
@@ -340,5 +342,21 @@ namespace EntityBuilder
             return columns;
         }
 
+        /// <summary>
+        /// 定義を表示するボタン
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void showDefinitionButton_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(this.tableNameComboBox.Text))
+            {
+                return;
+            }
+
+            // MainFormで操作したいのでモードレスダイアログで表示
+            var form = new DefinitionForm(this.tableNameComboBox.Text);
+            form.Show();
+        }
     }
 }
