@@ -1,0 +1,9 @@
+using PMS.Lib.Attributes;{using}
+
+namespace {namespace}
+{
+    public class {className}{inheritance}
+    {
+{properties}
+    }
+}

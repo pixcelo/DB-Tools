@@ -1,0 +1,12 @@
+namespace YourNamespace
+{
+    public class {className}
+    {
+        public {className}()
+        {
+            // コンストラクタ
+        }
+
+        // プロパティやメソッドをここに追加
+    }
+}
